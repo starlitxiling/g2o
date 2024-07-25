@@ -1,4 +1,4 @@
-name: win64
+name: Harmony OS Build
 
 on:
   push:
@@ -11,15 +11,15 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: Harmony OS Build
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         config:
         - {
-            name: "Windows 2022 MSVC",
-            os: windows-2022,
+            name: "Harmony OS aarch64 musl",
+            os: ubuntu-latest,
             build_type: "Debug",
             generators: "Ninja"
           }
@@ -29,9 +29,6 @@ jobs:
         with:
             fetch-depth: 25
 
-      - name: Setup VS Environment
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Print env
         run: |
           echo github.ref: ${{github.ref}}
@@ -40,27 +37,25 @@ jobs:
           echo runner.os: ${{runner.os}}
           Get-ChildItem Env:
 
-      - name: Install libraries with vcpkg
+      - name: Install dependencies for Harmony OS
         run: |
-          vcpkg --triplet x64-windows install eigen3
+          sudo apt update
+          sudo apt install cmake gcc-aarch64-linux-gnu musl-tools
 
-      - name: Eigen Introspection
+      - name: Configure CMake for Harmony OS
         run: |
-          type C:/vcpkg/packages/eigen3_x64-windows/debug/lib/pkgconfig/eigen3.pc
-
-      - name: Configure CMake
-        run: |
+          echo "number of cores: $(nproc)"
           cmake --version
-          cmake -B ${{github.workspace}}/build -G "${{matrix.config.generators}}" -DBUILD_UNITTESTS=ON -DG2O_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake -B ${{github.workspace}}/build -G "${{matrix.config.generators}}" -DBUILD_UNITTESTS=ON -DG2O_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -DCMAKE_C_COMPILER_TARGET=aarch64-linux-musl -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-musl
 
       - name: Build Introspection
         run: |
           echo "Number of processors: $Env:NUMBER_OF_PROCESSORS"
           echo "g2o config.h"
-          type ${{github.workspace}}/build/g2o/config.h
+          cat ${{github.workspace}}/build/g2o/config.h
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build -j $Env:NUMBER_OF_PROCESSORS --config ${{matrix.config.build_type}}
+        run: cmake --build ${{github.workspace}}/build -j $(nproc) --config ${{matrix.config.build_type}}
 
       - name: Test
         run: |
