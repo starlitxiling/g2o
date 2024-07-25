@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies for Harmony OS
         run: |
           apk update
-          apk add cmake musl-dev ninja gcc g++ make
+          apk add cmake musl-dev ninja gcc g++ make eigen
 
       - name: Download and install aarch64-linux-musl-gcc
         run: |
