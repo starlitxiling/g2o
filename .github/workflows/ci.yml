@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies for Harmony OS
         run: |
           sudo apt update
-          sudo apt install -y cmake gcc-aarch64-linux-gnu g++-aarch64-linux-gnu musl-tools ninja-build
+          sudo apt install -y cmake gcc-aarch64-linux-gnu g++-aarch64-linux-gnu musl-tools ninja-build libeigen3-dev
 
       - name: Configure CMake for Harmony OS
         run: |
