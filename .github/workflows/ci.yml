@@ -40,13 +40,13 @@ jobs:
       - name: Install dependencies for Harmony OS
         run: |
           sudo apt update
-          sudo apt install cmake gcc-aarch64-linux-gnu musl-tools
+          sudo apt install -y cmake gcc-aarch64-linux-gnu g++-aarch64-linux-gnu musl-tools ninja-build
 
       - name: Configure CMake for Harmony OS
         run: |
           echo "number of cores: $(nproc) $(nproc --all)"
           cmake --version
-          cmake -B ${{github.workspace}}/build -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -DCMAKE_C_COMPILER_TARGET=aarch64-linux-musl -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-musl
+          cmake -B ${{github.workspace}}/build -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -DCMAKE_C_COMPILER_TARGET=aarch64-linux-musl -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-musl -G Ninja
 
       - name: Build Introspection
         shell: bash
