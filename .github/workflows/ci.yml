@@ -12,14 +12,16 @@ on:
 jobs:
   build:
     name: Harmony OS Build
-    runs-on: alpine-latest
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:latest
     strategy:
       fail-fast: false
       matrix:
         config:
         - {
             name: "Harmony OS aarch64 musl",
-            os: alpine-latest,
+            os: alpine,
             build_type: "Debug",
             do_coverage: "OFF",
           }
