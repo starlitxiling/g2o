@@ -1,4 +1,4 @@
-name: Build g2o for aarch64
+name: Build g2o for aarch64 with musl
 
 on:
   push:
@@ -24,15 +24,21 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Build g2o for aarch64
+    - name: Set up dockcross
       run: |
-        docker run --rm dockcross/linux-arm64 > ./dockcross-linux-arm64
-        chmod +x ./dockcross-linux-arm64
-        ./dockcross-linux-arm64 bash -c 'cmake -S . -B build && cmake --build build'
+        docker run --rm dockcross/linux-arm64-musl > ./dockcross-linux-arm64-musl
+        chmod +x ./dockcross-linux-arm64-musl
+
+    - name: Install dependencies
+      run: |
+        ./dockcross-linux-arm64-musl bash -c 'apt-get update && apt-get install -y cmake g++ git'
+
+    - name: Build g2o for aarch64 with musl
+      run: |
+        ./dockcross-linux-arm64-musl bash -c 'cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=/usr/aarch64-linux-musl/toolchain.cmake && cmake --build build'
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: g2o-aarch64-build
+        name: g2o-aarch64-musl-build
         path: build/
-
