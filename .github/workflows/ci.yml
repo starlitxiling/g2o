@@ -43,7 +43,16 @@ jobs:
       - name: Install dependencies for Harmony OS
         run: |
           apk update
-          apk add cmake musl-dev ninja gcc g++ make eigen
+          apk add cmake musl-dev ninja gcc g++ make wget tar
+
+      - name: Install Eigen3
+        run: |
+          wget https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz
+          tar -xzf eigen-3.3.9.tar.gz
+          mkdir -p eigen-3.3.9/build
+          cd eigen-3.3.9/build
+          cmake ..
+          make install
 
       - name: Download and install aarch64-linux-musl-gcc
         run: |
@@ -56,7 +65,7 @@ jobs:
           echo "number of cores: $(nproc)"
           cmake --version
           export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
-          cmake -B ${{github.workspace}}/build -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-musl-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-musl-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -G Ninja
+          cmake -B ${{github.workspace}}/build -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-musl-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-musl-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -G Ninja -DEigen3_DIR=/usr/local/share/eigen3/cmake
 
       - name: Build Introspection
         run: |
