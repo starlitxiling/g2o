@@ -60,6 +60,22 @@ jobs:
           tar -xzf aarch64-linux-musl-cross.tgz
           export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
 
+      - name: List root directory contents
+        run: |
+          ls -la /
+
+      - name: List runner home directory contents
+        run: |
+          ls -la /home/runner/
+
+      - name: List runner work directory contents
+        run: |
+          ls -la /home/runner/work/
+
+      - name: List repository directory contents
+        run: |
+          ls -la /home/runner/work/g2o/
+
       - name: Configure CMake for Harmony OS
         run: |
           echo "number of cores: $(nproc)"
