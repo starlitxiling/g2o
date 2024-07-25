@@ -33,10 +33,11 @@ jobs:
 
       - name: Print env
         run: |
-          echo github.ref: ${{github.ref}}
-          echo github.event.action: ${{github.event.action}}
-          echo github.event_name: ${{github.event_name}}
-          echo runner.os: ${{runner.os}}
+          echo "github.workspace: ${{github.workspace}}"
+          echo "github.ref: ${{github.ref}}"
+          echo "github.event.action: ${{github.event.action}}"
+          echo "github.event_name: ${{github.event_name}}"
+          echo "runner.os: ${{runner.os}}"
           env
 
       - name: Install dependencies for Harmony OS
@@ -64,26 +65,26 @@ jobs:
           echo "number of cores: $(nproc)"
           cmake --version
           export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
-          cmake -B /home/runner/work/g2o/g2o/build -S . -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-musl-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-musl-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -G Ninja
+          cmake -B ${{github.workspace}}/build -S ${{github.workspace}} -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-musl-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-musl-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -G Ninja
 
       - name: Build Introspection
         run: |
           echo "g2o config.h"
-          cat /home/runner/work/g2o/g2o/build/g2o/config.h
+          cat ${{github.workspace}}/build/g2o/config.h
           echo "ENV"
           env | sort
 
       - name: Build
         run: |
           export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
-          cmake --build /home/runner/work/g2o/g2o/build --config ${{matrix.config.build_type}} -j $(nproc)
+          cmake --build ${{github.workspace}}/build --config ${{matrix.config.build_type}} -j $(nproc)
 
       - name: List build directory contents
         run: |
-          ls -la /home/runner/work/g2o/g2o/build
+          ls -la ${{github.workspace}}/build
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build-artifacts
-          path: /home/runner/work/g2o/g2o/build
+          path: ${{github.workspace}}/build/**
