@@ -78,6 +78,10 @@ jobs:
           export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
           cmake --build ${{github.workspace}}/build --config ${{matrix.config.build_type}} -j $(nproc)
 
+      - name: List build directory contents
+        run: |
+          ls -la ${{github.workspace}}/build
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v2
         with:
