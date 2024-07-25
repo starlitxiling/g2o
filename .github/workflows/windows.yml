@@ -35,7 +35,7 @@ jobs:
           echo github.event.action: ${{github.event.action}}
           echo github.event_name: ${{github.event_name}}
           echo runner.os: ${{runner.os}}
-          Get-ChildItem Env:
+          env
 
       - name: Install dependencies for Harmony OS
         run: |
