@@ -12,20 +12,21 @@ on:
 jobs:
   build:
     name: Harmony OS Build
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     strategy:
       fail-fast: false
       matrix:
         config:
         - {
             name: "Harmony OS aarch64 musl",
-            os: ubuntu-latest,
+            os: alpine-latest,
             build_type: "Debug",
             do_coverage: "OFF",
           }
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
             fetch-depth: 25
 
@@ -39,17 +40,23 @@ jobs:
 
       - name: Install dependencies for Harmony OS
         run: |
-          sudo apt update
-          sudo apt install -y cmake gcc-aarch64-linux-gnu g++-aarch64-linux-gnu musl-tools ninja-build libeigen3-dev
+          apk update
+          apk add cmake musl-dev ninja gcc g++ make
+
+      - name: Download and install aarch64-linux-musl-gcc
+        run: |
+          wget https://musl.cc/aarch64-linux-musl-cross.tgz
+          tar -xzf aarch64-linux-musl-cross.tgz
+          export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
 
       - name: Configure CMake for Harmony OS
         run: |
-          echo "number of cores: $(nproc) $(nproc --all)"
+          echo "number of cores: $(nproc)"
           cmake --version
-          cmake -B ${{github.workspace}}/build -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -DCMAKE_C_COMPILER_TARGET=aarch64-linux-musl -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-musl -G Ninja
+          export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
+          cmake -B ${{github.workspace}}/build -DBUILD_UNITTESTS=ON -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_C_COMPILER=aarch64-linux-musl-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-musl-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -G Ninja
 
       - name: Build Introspection
-        shell: bash
         run: |
           echo "g2o config.h"
           cat ${{github.workspace}}/build/g2o/config.h
@@ -57,8 +64,12 @@ jobs:
           env | sort
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{matrix.config.build_type}} -j $(nproc)
+        run: |
+          export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
+          cmake --build ${{github.workspace}}/build --config ${{matrix.config.build_type}} -j $(nproc)
 
       - name: Test
         working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{matrix.config.build_type}} --extra-verbose --output-on-failure
+        run: |
+          export PATH=$PATH:$(pwd)/aarch64-linux-musl-cross/bin
+          ctest -C ${{matrix.config.build_type}} --extra-verbose --output-on-failure
